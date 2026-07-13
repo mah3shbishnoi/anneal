@@ -1,8 +1,10 @@
+import argparse
 import subprocess
 import sys
 import os
 import webbrowser
 import time
+import threading
 
 def check_requirements():
     try:
@@ -14,22 +16,25 @@ def check_requirements():
 def main():
     check_requirements()
 
+    parser = argparse.ArgumentParser(description="Anneal application runner")
+    parser.add_argument("--host", default=os.environ.get("ANNEAL_HOST", "127.0.0.1"), help="Host address")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("ANNEAL_PORT", 8000)), help="Port number")
+    parser.add_argument("--no-browser", action="store_true", help="Do not open browser automatically")
+    args = parser.parse_args()
+
     import uvicorn
 
-    port = int(os.environ.get("ANNEAL_PORT", 8000))
-    host = os.environ.get("ANNEAL_HOST", "127.0.0.1")
+    if not args.no_browser:
+        def open_browser():
+            time.sleep(1.2)
+            webbrowser.open_new_tab(f"http://{args.host}:{args.port}")
 
-    def open_browser():
-        time.sleep(1.2)
-        webbrowser.open_new_tab(f"http://{host}:{port}")
-
-    import threading
-    threading.Thread(target=open_browser, daemon=True).start()
+        threading.Thread(target=open_browser, daemon=True).start()
 
     uvicorn.run(
         "backend.main:app",
-        host=host,
-        port=port,
+        host=args.host,
+        port=args.port,
         reload=True,
         log_level="info",
     )
