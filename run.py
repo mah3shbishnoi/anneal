@@ -21,7 +21,7 @@ def main():
 
     def open_browser():
         time.sleep(1.2)
-        webbrowser.open(f"http://{host}:{port}")
+        webbrowser.open_new_tab(f"http://{host}:{port}")
 
     import threading
     threading.Thread(target=open_browser, daemon=True).start()
