@@ -17,7 +17,7 @@
 3. **Browser Auto-Launch (`open_browser`)**
    - Starts a background daemon thread.
    - Waits 1.2 seconds for the server to bind the socket.
-   - Opens the application in the system's default web browser.
+   - Opens as a new tab in the currently active browser window, or launches the default browser.
 
 4. **Uvicorn Server**
    - Starts the ASGI server with `reload=True` for automatic code reloading during development.
