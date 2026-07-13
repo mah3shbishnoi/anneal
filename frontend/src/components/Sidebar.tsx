@@ -26,11 +26,10 @@ export function Sidebar({ activeTab, onSelectTab }: { activeTab: string; onSelec
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
-                  active
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${active
                     ? 'bg-neutral-900 text-neutral-100'
                     : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{item.label}</span>
