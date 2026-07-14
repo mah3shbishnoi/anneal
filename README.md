@@ -23,6 +23,7 @@ python run.py
 - Launches FastAPI backend at `http://127.0.0.1:8000`.
 - API documentation available at `http://127.0.0.1:8000/api/docs`.
 - Opens your browser automatically on launch.
+- Optional flags: `--host`, `--port`, `--no-browser`.
 
 ### 2. Frontend Interface
 ```bash
