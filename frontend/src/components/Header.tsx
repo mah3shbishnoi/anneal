@@ -10,11 +10,6 @@ export function Header({ title }: { title: string }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-neutral-800 bg-neutral-900/60 text-[11px] text-neutral-400">
-          <ShieldCheck className="w-3.5 h-3.5 text-neutral-400" />
-          <span>Local storage only</span>
-        </div>
-
         <button className="w-7 h-7 rounded-full border border-neutral-800 bg-neutral-900 flex items-center justify-center text-neutral-300 hover:border-neutral-700 transition-colors">
           <User className="w-3.5 h-3.5" />
         </button>
