@@ -38,13 +38,6 @@ export function Sidebar({ activeTab, onSelectTab }: { activeTab: string; onSelec
           })}
         </nav>
       </div>
-
-      <div className="px-3 py-2 border-t border-neutral-900">
-        <div className="flex items-center gap-2 text-xs text-neutral-500">
-          <span className="w-2 h-2 rounded-full bg-emerald-500/80" />
-          <span>Local engine online</span>
-        </div>
-      </div>
     </aside>
   )
 }
