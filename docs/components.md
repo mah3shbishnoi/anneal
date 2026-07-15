@@ -7,5 +7,3 @@
 | UI                   | Tailwind CSS + shadcn/ui |
 | Backend              | FastAPI                  |
 | Database             | SQLite                   |
-
-

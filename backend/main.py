@@ -1,13 +1,22 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.core.config import settings
 from backend.api.router import router
+from backend.database.session import engine, Base
+import backend.database.models
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.version,
     docs_url="/api/docs",
     redoc_url=None,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
