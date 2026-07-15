@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Flame, Clock, CheckCircle2, Play, Terminal } from 'lucide-react'
+import { ActivityGraph } from './ActivityGraph'
 
 interface StatsData {
   streak_days: number
@@ -72,6 +73,8 @@ export function Dashboard({ onStartInterview }: { onStartInterview: () => void }
           )
         })}
       </div>
+
+      <ActivityGraph />
 
       <div className="border border-neutral-800/80 bg-neutral-900/40 backdrop-blur rounded-lg p-5 space-y-3">
         <h2 className="text-sm font-medium text-neutral-200">Recent Sessions</h2>
