@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from backend.core.config import settings
@@ -7,6 +8,11 @@ from backend.database.session import get_db
 from backend.database.models import Interview
 
 router = APIRouter()
+
+class CreateInterviewRequest(BaseModel):
+    topic: str
+    difficulty: str = "Intermediate"
+    question_count: int = 3
 
 @router.get("/health")
 def health():
@@ -60,4 +66,22 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
             }
             for i in recent
         ],
+    }
+
+@router.post("/interviews")
+def create_interview(payload: CreateInterviewRequest, db: Session = Depends(get_db)):
+    interview = Interview(
+        topic=payload.topic,
+        difficulty=payload.difficulty.lower(),
+        status="in_progress",
+    )
+    db.add(interview)
+    db.commit()
+    db.refresh(interview)
+    return {
+        "id": interview.id,
+        "topic": interview.topic,
+        "difficulty": interview.difficulty,
+        "status": interview.status,
+        "started_at": interview.started_at.isoformat(),
     }
