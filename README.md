@@ -8,13 +8,6 @@ Anneal is an open-source, local-first technical interview practice application. 
 
 ---
 
-## Prerequisites
-
-- Python 3.10+
-- Node.js 18+
-
----
-
 ### 1. Backend Server
 ```bash
 python run.py
