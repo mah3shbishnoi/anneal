@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { Header } from './components/Header'
 import { Dashboard } from './features/dashboard/Dashboard'
-import { InterviewSetup, InterviewConfig } from './features/interview/InterviewSetup'
+import { InterviewSetup, type InterviewConfig } from './features/interview/InterviewSetup'
+import { ActiveInterview } from './features/interview/ActiveInterview'
 
 interface ActiveSession {
   id: string
@@ -31,7 +32,7 @@ export default function App() {
       }
     } catch {
       setSession({
-        id: 'local-demo',
+        id: 'local-session',
         topic: config.topic,
         difficulty: config.difficulty,
       })
@@ -52,10 +53,13 @@ export default function App() {
             !session ? (
               <InterviewSetup onStart={handleStartInterview} />
             ) : (
-              <div className="max-w-4xl mx-auto border border-neutral-800 bg-neutral-900/40 rounded-lg p-6">
-                <div className="text-xs text-neutral-400">Active session: {session.id}</div>
-                <h2 className="text-lg font-medium text-neutral-100 mt-1">{session.topic} ({session.difficulty})</h2>
-              </div>
+              <ActiveInterview
+                sessionId={session.id}
+                topic={session.topic}
+                difficulty={session.difficulty}
+                onComplete={() => setSession(null)}
+                onExit={() => setSession(null)}
+              />
             )
           ) : (
             <div className="max-w-5xl mx-auto border border-neutral-800/80 bg-neutral-900/40 backdrop-blur rounded-lg p-6">
