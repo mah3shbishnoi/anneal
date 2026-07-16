@@ -14,6 +14,9 @@ class CreateInterviewRequest(BaseModel):
     difficulty: str = "Intermediate"
     question_count: int = 3
 
+class CompleteInterviewRequest(BaseModel):
+    score: float = 85.0
+
 @router.get("/health")
 def health():
     return {"status": "ok", "app": settings.app_name, "version": settings.version}
@@ -84,4 +87,24 @@ def create_interview(payload: CreateInterviewRequest, db: Session = Depends(get_
         "difficulty": interview.difficulty,
         "status": interview.status,
         "started_at": interview.started_at.isoformat(),
+    }
+
+@router.post("/interviews/{interview_id}/complete")
+def complete_interview(interview_id: str, payload: CompleteInterviewRequest, db: Session = Depends(get_db)):
+    interview = db.query(Interview).filter(Interview.id == interview_id).first()
+    if not interview:
+        return {"error": "interview not found"}
+
+    now = datetime.utcnow()
+    interview.ended_at = now
+    interview.duration_seconds = max(60, int((now - interview.started_at).total_seconds()))
+    interview.overall_score = payload.score
+    interview.status = "completed"
+    db.commit()
+    db.refresh(interview)
+    return {
+        "id": interview.id,
+        "status": interview.status,
+        "overall_score": interview.overall_score,
+        "duration_seconds": interview.duration_seconds,
     }
