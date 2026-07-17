@@ -22,11 +22,11 @@ function localDateStr(date: Date): string {
   return `${y}-${m}-${d}`
 }
 
-function getIntensityClass(minutes: number) {
-  if (minutes === 0) return 'bg-neutral-900 border border-neutral-800/60'
-  if (minutes < 15) return 'bg-emerald-950 border border-emerald-900'
-  if (minutes < 30) return 'bg-emerald-800 border border-emerald-700'
-  if (minutes < 60) return 'bg-emerald-600 border border-emerald-500'
+function getIntensityClass(sessions: number, minutes: number) {
+  if (sessions === 0 && minutes === 0) return 'bg-neutral-900 border border-neutral-800/60'
+  if (sessions === 1 || minutes < 15) return 'bg-emerald-800 border border-emerald-700'
+  if (sessions === 2 || minutes < 30) return 'bg-emerald-600 border border-emerald-500'
+  if (sessions === 3 || minutes < 60) return 'bg-emerald-500 border border-emerald-400'
   return 'bg-emerald-400 border border-emerald-300'
 }
 
@@ -80,8 +80,6 @@ function MonthBlock({ label, cols }: { label: string; cols: WeekCol[] }) {
   return (
     <div className="flex flex-col gap-1.5 shrink-0" style={{ width: `${blockW}px` }}>
       <span className="text-[10px] text-neutral-400 font-mono font-medium text-center w-full">{label}</span>
-
-      {/* 7 rows x N cols mini-grid */}
       <div
         className="grid grid-rows-7 grid-flow-col"
         style={{
@@ -95,7 +93,7 @@ function MonthBlock({ label, cols }: { label: string; cols: WeekCol[] }) {
               <div
                 key={day.date}
                 title={`${day.date}: ${day.minutes} min · ${day.sessions} sessions`}
-                className={`rounded-[2px] cursor-pointer transition-colors ${getIntensityClass(day.minutes)}`}
+                className={`rounded-[2px] cursor-pointer transition-colors ${getIntensityClass(day.sessions, day.minutes)}`}
                 style={{ width: CELL, height: CELL }}
               />
             ) : (
