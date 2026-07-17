@@ -182,16 +182,6 @@ export function ActivityGraph({ activity = [], joinYear = 2026 }: ActivityGraphP
             ))}
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-1.5 text-[11px] text-neutral-500">
-            <span>Less</span>
-            <div className="w-2.5 h-2.5 rounded-sm bg-neutral-900 border border-neutral-800/60" />
-            <div className="w-2.5 h-2.5 rounded-sm bg-emerald-950 border border-emerald-900" />
-            <div className="w-2.5 h-2.5 rounded-sm bg-emerald-800 border border-emerald-700" />
-            <div className="w-2.5 h-2.5 rounded-sm bg-emerald-600 border border-emerald-500" />
-            <div className="w-2.5 h-2.5 rounded-sm bg-emerald-400 border border-emerald-300" />
-            <span>More</span>
-          </div>
         </div>
       </div>
 
