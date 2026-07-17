@@ -4,8 +4,6 @@ export function Header({ title }: { title: string }) {
   return (
     <header className="h-12 border-b border-neutral-800 bg-neutral-950/70 backdrop-blur px-6 flex items-center justify-between select-none">
       <div className="flex items-center gap-3">
-        <span className="text-xs font-medium uppercase tracking-wider text-neutral-400">workspace</span>
-        <span className="text-neutral-600 text-xs">/</span>
         <span className="text-xs font-medium text-neutral-200 capitalize">{title}</span>
       </div>
 
