@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Mic, MicOff, Camera, CameraOff, Clock, Square, Send, Loader2 } from 'lucide-react'
+import { Mic, MicOff, Camera, CameraOff, Clock, Square, Send, Loader2, CheckCircle2 } from 'lucide-react'
 
 interface ActiveInterviewProps {
   sessionId: string
   topic: string
   difficulty: string
-  onComplete: () => void
+  durationMinutes?: number
+  onComplete: (score: number, questionsAnswered: number) => void
   onExit: () => void
 }
 
@@ -13,19 +14,25 @@ export function ActiveInterview({
   sessionId,
   topic,
   difficulty,
+  durationMinutes = 20,
   onComplete,
   onExit,
 }: ActiveInterviewProps) {
-  const [seconds, setSeconds] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
   const [micActive, setMicActive] = useState(false)
   const [cameraActive, setCameraActive] = useState(false)
   const [answer, setAnswer] = useState('')
   const [questionIndex, setQuestionIndex] = useState(1)
+  const [answeredCount, setAnsweredCount] = useState(0)
   const [isFinishing, setIsFinishing] = useState(false)
-  const totalQuestions = 3
+
+  const totalSeconds = durationMinutes * 60
+  const remainingSeconds = Math.max(0, totalSeconds - elapsed)
 
   useEffect(() => {
-    const timer = setInterval(() => setSeconds((s) => s + 1), 1000)
+    const timer = setInterval(() => {
+      setElapsed((prev) => prev + 1)
+    }, 1000)
     return () => clearInterval(timer)
   }, [])
 
@@ -35,24 +42,28 @@ export function ActiveInterview({
     return `${m}:${s}`
   }
 
-  const handleNext = async () => {
-    if (questionIndex < totalQuestions) {
-      setQuestionIndex((prev) => prev + 1)
-      setAnswer('')
-    } else {
-      setIsFinishing(true)
-      try {
-        await fetch(`http://127.0.0.1:8000/api/interviews/${sessionId}/complete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ score: 88.0 }),
-        })
-      } catch {
-        // fallback for offline local mode
-      } finally {
-        setIsFinishing(false)
-        onComplete()
-      }
+  const handleNextQuestion = () => {
+    if (!answer.trim()) return
+    setAnsweredCount((prev) => prev + 1)
+    setQuestionIndex((prev) => prev + 1)
+    setAnswer('')
+  }
+
+  const handleFinishSession = async () => {
+    setIsFinishing(true)
+    const finalAnswered = answer.trim() ? answeredCount + 1 : answeredCount
+    const calculatedScore = Math.min(95, Math.max(65, 70 + finalAnswered * 5))
+    try {
+      await fetch(`http://127.0.0.1:8000/api/interviews/${sessionId}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score: calculatedScore }),
+      })
+    } catch {
+      // offline fallback
+    } finally {
+      setIsFinishing(false)
+      onComplete(calculatedScore, finalAnswered)
     }
   }
 
@@ -64,27 +75,40 @@ export function ActiveInterview({
             {topic}
           </span>
           <span className="text-xs text-neutral-500 capitalize">{difficulty}</span>
+          <span className="text-xs text-neutral-600">&bull;</span>
+          <span className="text-xs text-neutral-400 font-mono">{answeredCount} answered</span>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 font-mono text-xs text-neutral-300">
             <Clock className="w-3.5 h-3.5 text-neutral-400" />
-            <span>{formatTime(seconds)}</span>
+            <span className={remainingSeconds < 120 ? 'text-amber-400' : ''}>
+              {formatTime(remainingSeconds)} remaining
+            </span>
           </div>
 
           <button
+            onClick={handleFinishSession}
+            disabled={isFinishing}
+            className="flex items-center gap-1.5 px-3 py-1 rounded border border-neutral-800 hover:border-neutral-700 bg-neutral-900/40 text-neutral-300 hover:text-neutral-100 text-xs font-medium transition-colors"
+          >
+            {isFinishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+            <span>Finish Interview</span>
+          </button>
+
+          <button
             onClick={onExit}
-            className="flex items-center gap-1.5 px-3 py-1 rounded border border-neutral-800 hover:border-red-900/50 text-neutral-400 hover:text-red-400 text-xs transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-neutral-800 hover:border-red-900/50 text-neutral-500 hover:text-red-400 text-xs transition-colors"
           >
             <Square className="w-3 h-3" />
-            <span>End Session</span>
+            <span>Abandon</span>
           </button>
         </div>
       </div>
 
       <div className="border border-neutral-800/80 bg-neutral-900/40 backdrop-blur rounded-lg p-6 space-y-3">
         <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-          Question {questionIndex} of {totalQuestions}
+          Question #{questionIndex}
         </div>
         <h2 className="text-base font-semibold text-neutral-100 leading-snug">
           Explain how memory management and garbage collection function in this runtime, and describe how circular references are resolved.
@@ -143,23 +167,14 @@ export function ActiveInterview({
             />
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
             <button
-              onClick={handleNext}
+              onClick={handleNextQuestion}
               disabled={!answer.trim() || isFinishing}
               className="flex items-center gap-2 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 text-xs font-medium hover:bg-neutral-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {isFinishing ? (
-                <>
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Saving Session...</span>
-                </>
-              ) : (
-                <>
-                  <span>{questionIndex < totalQuestions ? 'Submit & Next Question' : 'Finish Interview'}</span>
-                  <Send className="w-3 h-3" />
-                </>
-              )}
+              <span>Submit & Next Question</span>
+              <Send className="w-3 h-3" />
             </button>
           </div>
         </div>
