@@ -4,11 +4,14 @@ import { Header } from './components/Header'
 import { Dashboard } from './features/dashboard/Dashboard'
 import { InterviewSetup, type InterviewConfig } from './features/interview/InterviewSetup'
 import { ActiveInterview } from './features/interview/ActiveInterview'
+import { InterviewResults } from './features/interview/InterviewResults'
 
 interface ActiveSession {
   id: string
   topic: string
   difficulty: string
+  status: 'in_progress' | 'completed'
+  score?: number
 }
 
 export default function App() {
@@ -28,15 +31,22 @@ export default function App() {
       })
       if (res.ok) {
         const data = await res.json()
-        setSession(data)
+        setSession({ ...data, status: 'in_progress' })
       }
     } catch {
       setSession({
         id: 'local-session',
         topic: config.topic,
         difficulty: config.difficulty,
+        status: 'in_progress',
       })
     }
+  }
+
+  const getHeaderTitle = () => {
+    if (session?.status === 'in_progress') return 'Interview in progress'
+    if (session?.status === 'completed') return 'Evaluation report'
+    return activeTab
   }
 
   return (
@@ -44,7 +54,7 @@ export default function App() {
       <Sidebar activeTab={activeTab} onSelectTab={(tab) => { setSession(null); setActiveTab(tab) }} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <Header title={session ? 'Interview in progress' : activeTab} />
+        <Header title={getHeaderTitle()} />
 
         <main className="flex-1 overflow-y-auto p-8">
           {activeTab === 'dashboard' ? (
@@ -52,13 +62,21 @@ export default function App() {
           ) : activeTab === 'practice' ? (
             !session ? (
               <InterviewSetup onStart={handleStartInterview} />
-            ) : (
+            ) : session.status === 'in_progress' ? (
               <ActiveInterview
                 sessionId={session.id}
                 topic={session.topic}
                 difficulty={session.difficulty}
-                onComplete={() => setSession(null)}
+                onComplete={() => setSession({ ...session, status: 'completed', score: 88 })}
                 onExit={() => setSession(null)}
+              />
+            ) : (
+              <InterviewResults
+                topic={session.topic}
+                difficulty={session.difficulty}
+                score={session.score}
+                onReturnToDashboard={() => { setSession(null); setActiveTab('dashboard') }}
+                onRetry={() => setSession(null)}
               />
             )
           ) : (
