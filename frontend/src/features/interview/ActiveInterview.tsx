@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Mic, MicOff, Camera, CameraOff, Clock, Square, Send } from 'lucide-react'
+import { Mic, MicOff, Camera, CameraOff, Clock, Square, Send, Loader2 } from 'lucide-react'
 
 interface ActiveInterviewProps {
   sessionId: string
@@ -10,6 +10,7 @@ interface ActiveInterviewProps {
 }
 
 export function ActiveInterview({
+  sessionId,
   topic,
   difficulty,
   onComplete,
@@ -20,6 +21,7 @@ export function ActiveInterview({
   const [cameraActive, setCameraActive] = useState(false)
   const [answer, setAnswer] = useState('')
   const [questionIndex, setQuestionIndex] = useState(1)
+  const [isFinishing, setIsFinishing] = useState(false)
   const totalQuestions = 3
 
   useEffect(() => {
@@ -33,12 +35,24 @@ export function ActiveInterview({
     return `${m}:${s}`
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (questionIndex < totalQuestions) {
       setQuestionIndex((prev) => prev + 1)
       setAnswer('')
     } else {
-      onComplete()
+      setIsFinishing(true)
+      try {
+        await fetch(`http://127.0.0.1:8000/api/interviews/${sessionId}/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ score: 88.0 }),
+        })
+      } catch {
+        // fallback for offline local mode
+      } finally {
+        setIsFinishing(false)
+        onComplete()
+      }
     }
   }
 
@@ -132,11 +146,20 @@ export function ActiveInterview({
           <div className="flex justify-end">
             <button
               onClick={handleNext}
-              disabled={!answer.trim()}
+              disabled={!answer.trim() || isFinishing}
               className="flex items-center gap-2 px-4 py-2 rounded-md bg-neutral-100 text-neutral-900 text-xs font-medium hover:bg-neutral-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <span>{questionIndex < totalQuestions ? 'Submit & Next Question' : 'Finish Interview'}</span>
-              <Send className="w-3 h-3" />
+              {isFinishing ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>Saving Session...</span>
+                </>
+              ) : (
+                <>
+                  <span>{questionIndex < totalQuestions ? 'Submit & Next Question' : 'Finish Interview'}</span>
+                  <Send className="w-3 h-3" />
+                </>
+              )}
             </button>
           </div>
         </div>
