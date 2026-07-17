@@ -44,7 +44,7 @@ export function Dashboard({ onStartInterview }: { onStartInterview: () => void }
       <div className="flex items-center justify-between border-b border-neutral-800 pb-5">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-neutral-100">Performance Dashboard</h1>
-          <p className="text-xs text-neutral-400 mt-1">Review your practice metrics and start a new evaluation session.</p>
+
         </div>
 
         <button
