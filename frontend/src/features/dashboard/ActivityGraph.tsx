@@ -79,8 +79,7 @@ function MonthBlock({ label, cols }: { label: string; cols: WeekCol[] }) {
 
   return (
     <div className="flex flex-col gap-1.5 shrink-0" style={{ width: `${blockW}px` }}>
-      {/* Month label directly above its block */}
-      <span className="text-[10px] text-neutral-400 font-mono font-medium">{label}</span>
+      <span className="text-[10px] text-neutral-400 font-mono font-medium text-center w-full">{label}</span>
 
       {/* 7 rows x N cols mini-grid */}
       <div
