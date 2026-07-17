@@ -120,7 +120,7 @@ export function ActivityGraph({ activity = [], joinYear = 2026 }: ActivityGraphP
   const [selectedYear, setSelectedYear] = useState(thisYear)
 
   const years: number[] = []
-  for (let y = startYear; y <= thisYear; y++) years.push(y)
+  for (let y = thisYear; y >= startYear; y--) years.push(y)
 
   const { monthBlocks, totalSessions, totalMinutes } = useMemo(() => {
     const activityMap = new Map(activity.map((a) => [a.date, a]))
@@ -148,63 +148,54 @@ export function ActivityGraph({ activity = [], joinYear = 2026 }: ActivityGraphP
   const gridHeight = 7 * (CELL + GAP) - GAP // exact height of cell grid
 
   return (
-    <div className="border border-neutral-800/80 bg-neutral-900/40 backdrop-blur rounded-lg p-5 space-y-4 select-none">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-medium text-neutral-200">Practice Activity</h2>
-            <span className="text-xs text-neutral-500">&bull;</span>
-            <span className="text-xs text-neutral-400 font-mono">
-              {totalSessions} sessions · {Math.round(totalMinutes / 60)}h in {selectedYear}
-            </span>
-          </div>
-          <p className="text-[11px] text-neutral-500 mt-0.5">
-            Jan – Dec {selectedYear} · interview frequency and intensity
-          </p>
+    <div className="flex flex-col md:flex-row gap-4 items-start select-none">
+      {/* Main Graph Card */}
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-medium text-neutral-200">Practice Activity</h2>
+          <span className="text-xs text-neutral-500">&bull;</span>
+          <span className="text-xs text-neutral-400 font-mono">
+            {totalSessions} sessions · {Math.round(totalMinutes / 60)}h in {selectedYear}
+          </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Year tabs */}
-          <div className="flex items-center gap-1">
-            {years.map((y) => (
-              <button
-                key={y}
-                onClick={() => setSelectedYear(y)}
-                className={`px-2 py-0.5 rounded text-[11px] font-mono font-medium transition-colors ${
-                  y === selectedYear
-                    ? 'bg-neutral-100 text-neutral-900'
-                    : 'border border-neutral-800 bg-neutral-950 text-neutral-400 hover:text-neutral-200'
-                }`}
-              >
-                {y}
-              </button>
-            ))}
-          </div>
+        <div className="border border-neutral-800/80 bg-neutral-900/40 backdrop-blur rounded-lg p-4 overflow-x-auto">
+          <div className="flex gap-1 items-start min-w-max">
+            {/* Day-of-week labels */}
+            <div
+              className="flex flex-col justify-between text-[9px] text-neutral-500 font-mono shrink-0 pr-1.5"
+              style={{ height: `${gridHeight + 18}px`, paddingTop: '18px' }}
+            >
+              <span>Mon</span>
+              <span>Wed</span>
+              <span>Fri</span>
+            </div>
 
+            {/* 12 month blocks with gap between each */}
+            <div className="flex gap-2.5 items-start">
+              {monthBlocks.map(({ label, cols }) => (
+                <MonthBlock key={label} label={label} cols={cols} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Graph */}
-      <div className="overflow-x-auto pb-1">
-        <div className="flex gap-1 items-start">
-          {/* Day-of-week labels */}
-          <div
-            className="flex flex-col justify-between text-[9px] text-neutral-500 font-mono shrink-0 pr-1.5"
-            style={{ height: `${gridHeight + 18}px`, paddingTop: '18px' }}
+      {/* GitHub-style vertical year list */}
+      <div className="flex md:flex-col gap-1 w-full md:w-20 shrink-0 md:pt-7">
+        {years.map((y) => (
+          <button
+            key={y}
+            onClick={() => setSelectedYear(y)}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors text-center ${
+              y === selectedYear
+                ? 'bg-blue-600 text-white font-semibold'
+                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+            }`}
           >
-            <span>Mon</span>
-            <span>Wed</span>
-            <span>Fri</span>
-          </div>
-
-          {/* 12 month blocks with gap between each */}
-          <div className="flex gap-2.5 items-start">
-            {monthBlocks.map(({ label, cols }) => (
-              <MonthBlock key={label} label={label} cols={cols} />
-            ))}
-          </div>
-        </div>
+            {y}
+          </button>
+        ))}
       </div>
     </div>
   )
