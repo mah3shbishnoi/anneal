@@ -14,6 +14,11 @@ interface StatsData {
     overall_score: number | null
     started_at: string
   }>
+  activity?: Array<{
+    date: string
+    minutes: number
+    sessions: number
+  }>
 }
 
 export function Dashboard({ onStartInterview }: { onStartInterview: () => void }) {
@@ -22,6 +27,7 @@ export function Dashboard({ onStartInterview }: { onStartInterview: () => void }
     total_interviews: 0,
     practice_hours: 0,
     recent_interviews: [],
+    activity: [],
   })
 
   useEffect(() => {
@@ -74,7 +80,7 @@ export function Dashboard({ onStartInterview }: { onStartInterview: () => void }
         })}
       </div>
 
-      <ActivityGraph />
+      <ActivityGraph activity={stats.activity} />
 
       <div className="border border-neutral-800/80 bg-neutral-900/40 backdrop-blur rounded-lg p-5 space-y-3">
         <h2 className="text-sm font-medium text-neutral-200">Recent Sessions</h2>
