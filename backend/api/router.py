@@ -28,7 +28,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     practice_hours = round(total_seconds / 3600, 1)
 
     completed = (
-        db.query(Interview.started_at)
+        db.query(Interview.started_at, Interview.duration_seconds)
         .filter(Interview.status == "completed")
         .order_by(Interview.started_at.desc())
         .all()
@@ -36,9 +36,9 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 
     streak_days = 0
     if completed:
-        unique_dates = sorted(list({i.started_at.date() for i in completed}), reverse=True)
+        unique_dates = sorted(list({i.started_at.date() for i in completed if i.started_at}), reverse=True)
         today = datetime.utcnow().date()
-        if unique_dates[0] in (today, today - timedelta(days=1)):
+        if unique_dates and unique_dates[0] in (today, today - timedelta(days=1)):
             current = unique_dates[0]
             for d in unique_dates:
                 if d == current:
@@ -46,6 +46,19 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
                     current -= timedelta(days=1)
                 else:
                     break
+
+    daily_activity = {}
+    for i in completed:
+        if not i.started_at:
+            continue
+        date_str = i.started_at.strftime("%Y-%m-%d")
+        duration_mins = max(1, round((i.duration_seconds or 0) / 60))
+        if date_str not in daily_activity:
+            daily_activity[date_str] = {"date": date_str, "minutes": 0, "sessions": 0}
+        daily_activity[date_str]["minutes"] += duration_mins
+        daily_activity[date_str]["sessions"] += 1
+
+    activity_list = list(daily_activity.values())
 
     recent = (
         db.query(Interview)
@@ -69,6 +82,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
             }
             for i in recent
         ],
+        "activity": activity_list,
     }
 
 @router.post("/interviews")
