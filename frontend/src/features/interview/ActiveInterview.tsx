@@ -10,6 +10,37 @@ interface ActiveInterviewProps {
   onExit: () => void
 }
 
+const TOPIC_QUESTIONS: Record<string, string[]> = {
+  Python: [
+    'Explain how Python handles memory management and the Global Interpreter Lock (GIL).',
+    'How do Python generators work, and what is the difference between yield and return?',
+    'What are Python decorators, and how would you implement a timing decorator?',
+    'Explain the difference between mutable and immutable types in Python with examples.',
+    'How does Python resolve method resolution order (MRO) in multiple inheritance?',
+  ],
+  Algorithms: [
+    'How would you detect a cycle in a directed graph using DFS or topological sort?',
+    'Explain the difference between Dijkstra and Bellman-Ford algorithms.',
+    'Describe how you would design an LRU cache with O(1) get and put operations.',
+    'What is the time and space complexity of QuickSort in best and worst cases?',
+    'Explain how binary search trees maintain balance in AVL or Red-Black trees.',
+  ],
+  Databases: [
+    'Explain the differences between optimistic and pessimistic locking in SQL transactions.',
+    'How do B-Tree and Hash indexes differ, and when would you use each?',
+    'What are ACID properties, and how do modern relational databases enforce isolation levels?',
+    'Explain the difference between normalization and denormalization with performance tradeoffs.',
+    'How does database sharding work, and how do you handle cross-shard queries?',
+  ],
+  'System Design': [
+    'How would you design a distributed rate limiter for a high-throughput API gateway?',
+    'Explain how consistent hashing is used in distributed caching systems like Memcached.',
+    'Describe the tradeoffs between event-driven architectures and synchronous REST communication.',
+    'How do you design a reliable message delivery system with idempotency and retry semantics?',
+    'Explain how write-ahead logging (WAL) guarantees data durability in distributed stores.',
+  ],
+}
+
 export function ActiveInterview({
   sessionId,
   topic,
@@ -26,6 +57,9 @@ export function ActiveInterview({
   const [answeredCount, setAnsweredCount] = useState(0)
   const [isFinishing, setIsFinishing] = useState(false)
 
+  const questions = TOPIC_QUESTIONS[topic] || TOPIC_QUESTIONS['Python']
+  const currentQuestion = questions[(questionIndex - 1) % questions.length]
+
   const totalSeconds = durationMinutes * 60
   const remainingSeconds = Math.max(0, totalSeconds - elapsed)
 
@@ -35,6 +69,12 @@ export function ActiveInterview({
     }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (remainingSeconds === 0 && !isFinishing) {
+      handleFinishSession()
+    }
+  }, [remainingSeconds, isFinishing])
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0')
@@ -111,7 +151,7 @@ export function ActiveInterview({
           Question #{questionIndex}
         </div>
         <h2 className="text-base font-semibold text-neutral-100 leading-snug">
-          Explain how memory management and garbage collection function in this runtime, and describe how circular references are resolved.
+          {currentQuestion}
         </h2>
       </div>
 
