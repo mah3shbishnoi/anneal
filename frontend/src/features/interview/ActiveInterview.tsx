@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Mic, MicOff, Camera, CameraOff, Clock, Square, Send, Loader2, CheckCircle2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Mic, MicOff, Camera, CameraOff, Clock, Square, Send, Loader2, CheckCircle2, Volume2, VolumeX } from 'lucide-react'
 
 interface ActiveInterviewProps {
   sessionId: string
@@ -56,6 +56,8 @@ export function ActiveInterview({
   const [questionIndex, setQuestionIndex] = useState(1)
   const [answeredCount, setAnsweredCount] = useState(0)
   const [isFinishing, setIsFinishing] = useState(false)
+  const [ttsEnabled, setTtsEnabled] = useState(true)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
   const questions = TOPIC_QUESTIONS[topic] || TOPIC_QUESTIONS['Python']
   const currentQuestion = questions[(questionIndex - 1) % questions.length]
@@ -75,6 +77,20 @@ export function ActiveInterview({
       handleFinishSession()
     }
   }, [remainingSeconds, isFinishing])
+
+  useEffect(() => {
+    if (!ttsEnabled) return
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(currentQuestion)
+    u.rate = 0.92
+    u.pitch = 1
+    const voices = window.speechSynthesis.getVoices()
+    const preferred = voices.find((v) => v.name.includes('Google') || v.name.includes('Natural') || v.lang === 'en-US')
+    if (preferred) u.voice = preferred
+    utteranceRef.current = u
+    window.speechSynthesis.speak(u)
+    return () => window.speechSynthesis.cancel()
+  }, [questionIndex, ttsEnabled])
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0')
@@ -147,8 +163,28 @@ export function ActiveInterview({
       </div>
 
       <div className="border border-neutral-800/80 bg-neutral-900/40 backdrop-blur rounded-lg p-6 space-y-3">
-        <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-          Question #{questionIndex}
+        <div className="flex items-center justify-between">
+          <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
+            Question #{questionIndex}
+          </div>
+          <button
+            onClick={() => {
+              setTtsEnabled((prev) => {
+                const next = !prev
+                if (!next) window.speechSynthesis.cancel()
+                return next
+              })
+            }}
+            title={ttsEnabled ? 'Mute interviewer voice' : 'Enable interviewer voice'}
+            className={`flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] transition-colors ${
+              ttsEnabled
+                ? 'border-emerald-700 bg-emerald-950/40 text-emerald-400'
+                : 'border-neutral-800 text-neutral-500 hover:text-neutral-300'
+            }`}
+          >
+            {ttsEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+            <span>{ttsEnabled ? 'Voice on' : 'Voice off'}</span>
+          </button>
         </div>
         <h2 className="text-base font-semibold text-neutral-100 leading-snug">
           {currentQuestion}
